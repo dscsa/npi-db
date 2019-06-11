@@ -127,7 +127,7 @@ function compareSheets() {
    content += removed_npi.join("\n")
    
    polishStage(sh)
-    MailApp.sendEmail(COMPARE_UPDATE_EMAIL, "NPI DB UPDATE", content)
+   MailApp.sendEmail(COMPARE_UPDATE_EMAIL, "NPI DB UPDATE", content)
 }
 
 
