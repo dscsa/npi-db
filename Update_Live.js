@@ -71,14 +71,42 @@ function removeEmptyElems(arr){
 
 function editLiveSheet(live,npi_to_add,changes_to_make){
   var live_state_index = 4
+  var live_npi_index = 0
+  
+  var npi_modified = []
+  
   //For each arr in npi_to_add matrix
   //arr.splice(live_state_index,0,'GA')
-  
+  for(var i = 0; i < npi_to_add.length; i++){
+    var arr = npi_to_add[i]
+    arr.splice(live_state_index,0,'GA')
+    live.appendRow(arr)
+    npi_modified.push(arr[0])
+  }
   
   //For each npi in changes_to_make json
+  var live_data = live.getDataRange().getValues()
+  var header_row = live_data[0]
+  
+  for(var i = 0; i < live_data.length; i++){
+    if(changes_to_make[live_data[i][live_npi_index]]){
+      Logger.log(live_data[i])
+      var changes = changes_to_make[live_data[i][live_npi_index]]
+      
+      //Edit appropriately
+      for(var prop in changes){
+          var col_index = header_row.indexOf(prop)
+          live.getRange((i+1),(col_index+1)).setValue(changes[prop])
+      }
+      
+    }
+  }
+  
+  return npi_modified
+  
 }
 
-
+//TODO this
 function clearUpdatedRows(staging,npi_to_clear){
   
 }
