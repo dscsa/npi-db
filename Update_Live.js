@@ -55,18 +55,11 @@ function updateLive(){
   Logger.log(changes_to_make)
   
   var npi_to_clear = editLiveSheet(live,npi_to_add,changes_to_make)
+  Logger.log(npi_to_clear)
   clearUpdatedRows(staging,npi_to_clear) //for ones that were updated, remove them from the staging space
   
 }
 
-
-function removeEmptyElems(arr){
-  var res = []
-  for(var j = 0; j < arr.length; j++){
-    if(arr[j].toString().trim().length > 0) res.push(arr[j].toString().trim())
-  }
-  return res
-}
 
 
 function editLiveSheet(live,npi_to_add,changes_to_make){
@@ -99,6 +92,8 @@ function editLiveSheet(live,npi_to_add,changes_to_make){
           live.getRange((i+1),(col_index+1)).setValue(changes[prop])
       }
       
+      npi_modified.push(live_data[i][live_npi_index])
+      
     }
   }
   
@@ -106,7 +101,30 @@ function editLiveSheet(live,npi_to_add,changes_to_make){
   
 }
 
-//TODO this
+
+
+
+//Clear out rows from the staging area that have been processed and updated appropriately
+//on the live sheet
 function clearUpdatedRows(staging,npi_to_clear){
+  var data = staging.getDataRange().getValues()
+  var staging_npi_index = 2
   
+  for(var i = data.length - 1; i > 0; i--){
+    //if(~ npi_to_clear.indexOf(data[i][staging_npi_index].toString())) staging.getRange((i+1), 1, 1, staging.getMaxColumns()).setBackground('green')
+    if(~ npi_to_clear.indexOf(data[i][staging_npi_index].toString())) staging.deleteRow(i+1)
+  }
+  
+}
+
+
+
+
+//Helper to just clear out empty array elements
+function removeEmptyElems(arr){
+  var res = []
+  for(var j = 0; j < arr.length; j++){
+    if(arr[j].toString().trim().length > 0) res.push(arr[j].toString().trim())
+  }
+  return res
 }
