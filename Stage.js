@@ -5,9 +5,7 @@ function testStage(){
 
 
 function polishStage(sh){
-  
-  sh = SpreadsheetApp.getActiveSpreadsheet() //TODO: delete this
-  
+    
   var staging = sh.getSheetByName('Staging Area')
   
   //Go through each row, checking the tag, and highlight appropriate cells to make the approval process easy
@@ -33,7 +31,7 @@ function polishStage(sh){
 
 
 function stage(row,sh, tag){
-  
+
   var staging_area = sh.getSheetByName('Staging Area')
   var reordered_row = [row[0],row[1],row[9],row[2],row[10],row[3],row[11],row[4],row[12],row[5],row[13],row[6],row[14]]
   

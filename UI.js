@@ -3,6 +3,7 @@ function onOpen(e) {
   
   ui.createMenu('DB Options')
     .addItem('Update Live Sheet', 'updateLive')
+    .addItem('Archive BACKUP sheets', 'archiveBackups')
     .addToUi();
 
 }

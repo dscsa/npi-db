@@ -1,20 +1,45 @@
-function main(){ 
+function updateDB(){ 
+    var now = new Date()
+    
+    if(!isUpdateDay(now)) return;
+    var hour_code = isUpdateHour(now)
+    
+    if(hour_code == null) return;
+
     var ss = SpreadsheetApp.openById(DB_FILE_ID)
     var raw_sheet = ss.getSheetByName("Georgia Pharmacies")
     raw_sheet.copyTo(ss)
     SpreadsheetApp.flush()
     
     var old_sheet = ss.getSheetByName("Copy of Georgia Pharmacies")
-    var time_stamp = Utilities.formatDate(new Date(), "GMT", "yyyy-MM-dd").toString()
+    var time_stamp = Utilities.formatDate(now, "GMT", "yyyy-MM-dd").toString()
     old_sheet.setName("BACKUP - " + time_stamp)
     
     raw_sheet.deleteRows(3, raw_sheet.getLastRow() - 2) //leave row 2, otherwise array functions freak tf out
     raw_sheet.getRange(2, 1, 1, raw_sheet.getMaxColumns()).clearContent()
     SpreadsheetApp.flush()
     
-    //TODO: here, based on something - batch parts of zip code so we don't hit a limit
-    populateRawSheet(1)
+
+    populateRawSheet(hour_code)
 }
+
+//Though this is triggered hourly, only do anything on Friday
+function isUpdateDay(now){
+  return (now.getDay() == UPDATE_DAY)
+}
+
+
+
+function isUpdateHour(now){
+  var code = null
+  
+  if((now.getHours() == 21) || (now.getHours() == 22)){
+    return (now.getHourse() == 22);
+  }
+  
+  return code
+}
+
 
 
 
@@ -22,7 +47,7 @@ function main(){
 function populateRawSheet(code){
   
   var raw_sheet = SpreadsheetApp.openById(DB_FILE_ID).getSheetByName("Georgia Pharmacies")
-  var zip_codes = build_zip_code_array()
+  var zip_codes = build_zip_code_array(code)
   
   var url = "https://npiregistry.cms.hhs.gov/api/resultsDemo2/?number=&enumeration_type=NPI-2&taxonomy_description=Pharmacy*&first_name=&last_name=&organization_name=&address_purpose=&city=&state=GA&postal_code="
   var url_end = "&country_code=&limit=200&skip="
@@ -52,7 +77,7 @@ function populateRawSheet(code){
         Logger.log(count)
       }
       
-      if((final_res_arr.length > 0) && ((i % 50) == 0)){ //TODO comp i against 100
+      if((final_res_arr.length > 0) && ((i % 200) == 0)){
           var last_row = appendRows(raw_sheet,final_res_arr)
           final_res_arr = []
       }
@@ -66,9 +91,9 @@ function populateRawSheet(code){
 
 
 
-
 //Builds an array of the zip codes for Georgia
-function build_zip_code_array(){
+//Splits batch in half depending on time
+function build_zip_code_array(code){
   
   var res = []
   for(var i = 30002; i < 32000; i++){
@@ -79,7 +104,9 @@ function build_zip_code_array(){
   '39828','39829','39832','39834','39836','39837','39840','39841','39842','39845','39846','39851','39852','39854',
   '39859','39861','39862','39866','39867','39870','39877','39885','39886','39897','39901'])
   
-  return res //TODO: remove slice
+  var half_length = Math.ceil(res.length / 2)
+  
+  return code ? res.splice(half_length) : res.splice(0,half_length)
 }
 
 

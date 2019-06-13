@@ -40,12 +40,29 @@ function compareSheets() {
   var removed_npi = []
   removed_npi.push("The following NPIs seem removed from the Live sheet:\n")
 
+  var name_addr_tracker = {} //if we see the same name at different addresses, should probably flag
+  var name_addr_issues = []
+  name_addr_issues.push("There are rows in the George Pharmacies sheet that have the same name, but different addresses/NPIs. Highlighted in orange:\n\n")
+  
   for(var i = 2; i < raw_data.length; i++){ //Go through the new_raw, looking at columns P-U for any discrepancies
+  
+    if(raw_data[i][0].toString().trim().length == 0) continue; //skip any extra blank rows, typically an issue from the whole append/delete functionality
+    
+    if(!name_addr_tracker[raw_data[i][index_name].toString().trim()]){
+      name_addr_tracker[raw_data[i][index_name].toString().trim()] = raw_data[i][index_addr].toString().trim()
+    } else{
+      if(name_addr_tracker[raw_data[i][index_name].toString().trim()] != raw_data[i][index_addr].toString().trim()){
+        //then weve got same name, different addresses, that's maybe an issue
+        new_raw.getRange("A" + (i+1) + ":I" + (i+1)).setBackground('orange')
+        name_addr_issues.push(raw_data[i][index_name].toString())
+      }
+
+    }
   
     if(raw_data[i][index_name_match].toString().trim() == "N/A"){ //then this is a new NPI
       //NEW NPI
       new_npi.push("NPI: " + raw_data[i][index_npi] + ", " + toTitleCase(clean_up_name_addr(raw_data[i][index_name])) + ", " + toTitleCase(clean_up_name_addr(raw_data[i][index_addr])) + ", " + toTitleCase(raw_data[i][index_city]) + ", " + raw_data[i][index_zip] + ", " + raw_data[i][index_phone] + ", " + raw_data[i][index_fax])
-      new_raw.getRange("A" + (i+1) + ":I" + (i+1)).setBackground('orange')
+      //new_raw.getRange("A" + (i+1) + ":I" + (i+1)).setBackground('orange')
       
       stage(raw_data[i], sh, 'ADD') //send it to staging area to add
       
@@ -103,7 +120,7 @@ function compareSheets() {
       
       if(found){
         info_changed.push(str)
-        new_raw.getRange("A" + (i+1) + ":I" + (i+1)).setBackground('orange')
+        //new_raw.getRange("A" + (i+1) + ":I" + (i+1)).setBackground('orange')
         stage(raw_data[i], sh, staging_tag)
       }
       
@@ -126,8 +143,11 @@ function compareSheets() {
    content += "\n\n"
    content += removed_npi.join("\n")
    
+   var name_addr_text = arrToSet(name_addr_issues).join("\n")
+   
    polishStage(sh)
-   MailApp.sendEmail(COMPARE_UPDATE_EMAIL, "NPI DB UPDATE", content)
+   MailApp.sendEmail(COMPARE_UPDATE_EMAIL, "NPI DB UPDATE", name_addr_text)
+   //MailApp.sendEmail(COMPARE_UPDATE_EMAIL, "NPI DB UPDATE", content)
 }
 
 

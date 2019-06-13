@@ -117,6 +117,13 @@ function clearUpdatedRows(staging,npi_to_clear){
   
 }
 
+function arrToSet(arr){
+  var res = []
+  for(var j = 0; j < arr.length; j++){
+    if(! (~ res.indexOf(arr[j]))) res.push(arr[j])
+  }
+  return res
+}
 
 
 
